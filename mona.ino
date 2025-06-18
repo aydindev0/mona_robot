@@ -24,7 +24,12 @@ const float wheel_radius = 15;
 // value should be set so that the measurement results show the linear displacement
 // in mm at the Serial Monitor/Plotter
 
-const float scale_encoder = 1;    
+// Q=E/m
+// M=E/Q
+// M=2pi*15mm/3500
+// M=0.027
+
+const float scale_encoder = 0.027;    
 const float pi = 3.14159; 
 
 
