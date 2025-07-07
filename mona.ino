@@ -6,12 +6,14 @@ ESP32Encoder right_encoder;
 ESP32Encoder left_encoder;
 
 int right_new_pos, right_old_pos, left_new_pos, left_old_pos;
-float right_vel, left_vel, right_ref_vel, left_ref_vel;
+float right_vel, left_vel, right_ref_vel, left_ref_vel, pulses_in_time;
 
 // set sample time
 float Ts = 0.01;
 
 float start_time, current_time, elapsed_time;
+
+float delta_right, delta_left, rotation_angle_right, rotation_angle_left;
 
 
 
@@ -65,6 +67,20 @@ void position(){
   elapsed_time = (millis()-current_time)/1000;    // elapsed time in seconds
   right_new_pos = right_encoder.getCount();
   left_new_pos = left_encoder.getCount();
+  // angular displacement = p/ppr * 2pi
+  delta_right = right_new_pos - right_old_pos;
+  delta_left = left_new_pos - left_old_pos; 
+  // rotational angle = delta s / r
+  rotation_angle_right = (delta_right * scale_encoder) / wheel_radius;
+  rotation_angle_left = (delta_left * scale_encoder) / wheel_radius;
+  // w = rotational angle / dt
+  right_vel = rotation_angle_right / elapsed_time;
+  left_vel = rotation_angle_left / elapsed_time;
+  Serial.print("Right velocity: ");
+  Serial.print(right_vel, 2);
+  Serial.print("Left velocity: ");
+  Serial.print(left_vel, 2);
+  Serial.println();
   right_old_pos = right_new_pos; 
   left_old_pos = left_new_pos;
 }
@@ -75,7 +91,7 @@ void loop(){
   while (current_time-start_time<10000){
     position();
     Serial.print(scale_encoder*right_old_pos);
-    Serial.print("\t")
+    Serial.print("\t");
     Serial.print(scale_encoder*left_old_pos);
     Serial.println();
     current_time = millis();
