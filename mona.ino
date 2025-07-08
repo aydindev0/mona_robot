@@ -7,7 +7,7 @@ ESP32Encoder left_encoder;
 
 int right_new_pos, right_old_pos, left_new_pos, left_old_pos;
 float right_vel, left_vel, right_ref_vel, left_ref_vel, pulses_in_time;
-
+int dead_zone;
 // set sample time
 float Ts = 0.01;
 
@@ -57,8 +57,13 @@ void setup(){
     right_old_pos = 0;
     left_old_pos = 0;
     delay(5000);
-    Left_mot_forward(128);
-    Right_mot_forward(128);
+    // Left_mot_forward(128);
+    // Right_mot_forward(128);
+        
+    // 100 percent duty cycle    
+    // Left_mot_forward(128);
+    // Right_mot_forward(128);
+
     }
 
 
@@ -83,6 +88,7 @@ void position(){
   Serial.println();
   right_old_pos = right_new_pos; 
   left_old_pos = left_new_pos;
+  
 }
 
 
@@ -90,6 +96,18 @@ void position(){
 void loop(){
   while (current_time-start_time<10000){
     position();
+    if (right_vel<=0){
+    dead_zone = dead_zone + 1;
+    Right_mot_forward(dead_zone);
+  }
+  else{
+    Motors_stop();
+    Serial.end();
+    delay(3000);
+  }
+  Serial.print("The dead zone is: ");
+  Serial.print(dead_zone);
+  Serial.println();
     Serial.print(scale_encoder*right_old_pos);
     Serial.print("\t");
     Serial.print(scale_encoder*left_old_pos);
