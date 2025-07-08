@@ -14,7 +14,9 @@ float Ts = 0.01;
 float start_time, current_time, elapsed_time;
 
 float delta_right, delta_left, rotation_angle_right, rotation_angle_left;
-
+int dead_zone_right = 30;
+int dead_zone_left = 29;
+float control, err;
 
 
 // Wheel radius is 15mm, every revolute is 3500 pulse
@@ -61,8 +63,8 @@ void setup(){
     // Right_mot_forward(128);
         
     // 100 percent duty cycle    
-    // Left_mot_forward(128);
-    // Right_mot_forward(128);
+    //Left_mot_forward(255);
+    //Right_mot_forward(255);
 
     }
 
@@ -88,33 +90,50 @@ void position(){
   Serial.println();
   right_old_pos = right_new_pos; 
   left_old_pos = left_new_pos;
-  
 }
 
 
+void Propotional(float ref, float act, float Kp){
+  err = (ref-act);
+  control = Kp*err;
+}
+
 
 void loop(){
-  while (current_time-start_time<10000){
+  // below code gets dead zone
+  // while (current_time-start_time<10000){
+  //   position();
+  //   if (right_vel<=0){
+  //   dead_zone = dead_zone + 1;
+  //   Right_mot_forward(dead_zone);
+  // }
+  // else{
+  //   Motors_stop();
+  //   Serial.end();
+  //   delay(3000);
+  // }
+  // Serial.print("The dead zone is: ");
+  // Serial.print(dead_zone);
+  // Serial.println();
+  //   Serial.print(scale_encoder*right_old_pos);
+  //   Serial.print("\t");
+  //   Serial.print(scale_encoder*left_old_pos);
+  //   Serial.println();
+
+  // correct angular velocity using the dead zone
+  while(true){
     position();
-    if (right_vel<=0){
-    dead_zone = dead_zone + 1;
-    Right_mot_forward(dead_zone);
-  }
-  else{
-    Motors_stop();
-    Serial.end();
-    delay(3000);
-  }
-  Serial.print("The dead zone is: ");
-  Serial.print(dead_zone);
-  Serial.println();
-    Serial.print(scale_encoder*right_old_pos);
-    Serial.print("\t");
-    Serial.print(scale_encoder*left_old_pos);
+    Propotional(pi, right_vel, 100.0);
+    Right_mot_forward(control+dead_zone_right);
+    Propotional(pi, left_vel, 100.0);
+    Left_mot_forward(control+dead_zone_left);
+    Serial.print("Right vel: ");
+    Serial.print(right_vel);
+    Serial.println();
+    Serial.print("Left vel: ");
+    Serial.print(left_vel);
     Serial.println();
     current_time = millis();
     delay(Ts*1000);
     }
-  Motors_stop();
-  Serial.end();
 }
